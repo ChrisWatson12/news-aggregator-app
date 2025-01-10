@@ -1,33 +1,39 @@
 import { SelectOptions } from '../types'
 
-export const newsApiOrgCategoryList = [
-  { id: 'general', webTitle: 'General' },
-  { id: 'sports', webTitle: 'Sports' },
-  { id: 'technology', webTitle: 'Technology' },
-  { id: 'entertainment', webTitle: 'Entertainment' },
-  { id: 'science', webTitle: 'Science' },
-  { id: 'health', webTitle: 'Health' },
-  { id: 'business', webTitle: 'Business' },
-]
+export const CATEGORY_OPTIONS_LIST: SelectOptions[] = [
+  { value: 'general', label: 'General' },
+  { value: 'sports', label: 'Sports' },
+  { value: 'technology', label: 'Technology' },
+  { value: 'entertainment', label: 'Entertainment' },
+  { value: 'science', label: 'Science' },
+  { value: 'health', label: 'Health' },
+  { value: 'business', label: 'Business' },
+  { value: 'arts', label: 'Arts' },
+  { value: 'animals-farmed', label: 'Animals farmed' },
+  { value: 'automobiles', label: 'Automobiles' },
+];
 
-export const sourceOptions: SelectOptions[] = [
-  { value: 1, label: 'News.org' },
-  { value: 2, label: 'New York Times' },
-  { value: 3, label: 'The Guardian' },
-]
+export const SOURCE_OPTIONS_LIST: SelectOptions[] = [
+  { value: "theguardian.com", label: 'The Guardian' },
+  { value: "The New York Times", label: 'The New York Times' },
+  { value: "business-insider", label: 'Business Insider' },
+  { value: "fox-news", label: 'Fox News' },
+  { value: "buzzfeed", label: 'Buzzfeed' },
+  { value: "techcrunch", label: 'TechCrunch' },
+  { value: "the-next-web", label: 'The Next Web' },
+  { value: "time", label: 'Time' },
+  { value: "al-jazeera-english", label: 'Al Jazeera English' },
+];
 
-export const dayOptions = Array.from({ length: 30 }, (_, i) => ({
-  value: i + 1,
-  label: (i + 1).toString(),
-}))
-
-export const monthOptions = Array.from({ length: 12 }, (_, i) => ({
-  value: i + 1,
-  label: (i + 1).toString(),
-}))
-
-export const currentYear = new Date().getFullYear()
-export const yearOptions = Array.from({ length: 10 }, (_, i) => ({
-  value: currentYear - i,
-  label: (currentYear - i).toString(),
-}))
+export const AUTHOR_OPTIONS_LIST: SelectOptions[] = [
+  { value: 0, label: 'Ben Protess' },
+  { value: 1, label: 'Jonah E. Bromwich' },
+  { value: 2, label: 'Ginia Bellafante' },
+  { value: 3, label: 'Caitlin Cassidy' },
+  { value: 4, label: 'Krishani Dhanji' },
+  { value: 5, label: 'Mostafa Rachwani' },
+  { value: 6, label: 'Phil Harrison' },
+  { value: 7, label: 'Matthew Gault' },
+  { value: 8, label: 'Brittney Melton' },
+  { value: 9, label: 'James Surowiecki' },
+];
