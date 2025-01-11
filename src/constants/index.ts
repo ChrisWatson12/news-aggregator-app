@@ -27,11 +27,11 @@ export const SOURCE_OPTIONS_LIST: SelectOptions[] = [
 
 export const AUTHOR_OPTIONS_LIST: SelectOptions[] = [
   { value: 0, label: 'Ben Protess' },
-  { value: 1, label: 'Jonah E. Bromwich' },
-  { value: 2, label: 'Ginia Bellafante' },
-  { value: 3, label: 'Caitlin Cassidy' },
-  { value: 4, label: 'Krishani Dhanji' },
-  { value: 5, label: 'Mostafa Rachwani' },
+  { value: 1, label: 'Ivan Mehta' },
+  { value: 2, label: 'Christy Cooney' },
+  { value: 3, label: 'Maxwell Zeff' },
+  { value: 4, label: 'BBC World Service' },
+  { value: 5, label: 'Kayla Epstein' },
   { value: 6, label: 'Phil Harrison' },
   { value: 7, label: 'Matthew Gault' },
   { value: 8, label: 'Brittney Melton' },

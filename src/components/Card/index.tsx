@@ -95,7 +95,7 @@ export const Card = ({ item }: { item: INewsItem }) => {
       />
       <div className="px-6 py-2">
         <div className="flex flex-col items-center">
-          <h1 className="py-2 px-4 rounded-lg text-center text-lg tracking-tighter font-bold bg-[#003366] text-white">
+          <h1 className="py-2 px-4 rounded-lg text-center text-lg tracking-tighter font-bold bg-appBgColor text-white">
             {articleAuthor}
           </h1>
           <h2 className="text-base tracking-tighter mt-1 text-center font-bold">

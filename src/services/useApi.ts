@@ -96,8 +96,7 @@ export function useFetchSearchResultData(filterData: FilterData) {
   const urls = {
     newsApi: constructUrl("https://newsapi.org/v2/everything", {
       q: searchQuery || undefined,
-      category: selectedCategories || undefined,
-      author: selectedAuthors || undefined,
+      domains: "bbc.co.uk, techcrunch.com, engadget.com",
       sources: selectedSources || undefined,
       from: fromDate || undefined,
       to: toDate || undefined,

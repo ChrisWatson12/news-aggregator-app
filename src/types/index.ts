@@ -39,13 +39,13 @@ interface IByline {
   original?: string;
 }
 export interface INewsItem {
-  author?: string;
+  author: string;
   title?: string;
   source?: TSourceType;
   description?: string;
   url?: string;
   urlToImage?: string;
-  publishedAt?: string;
+  publishedAt: string;
   content?: string;
   slug_name?: string;
   section?: string;

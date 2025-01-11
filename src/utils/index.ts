@@ -5,4 +5,7 @@ export const joinQueryValues = (
   key: "value" | "label",
   withQuotes: boolean = true,
   separator: string = " "
-): string => data.map((item: SelectOptions) => (withQuotes ? `"${item[key]}"` : item[key])).join(separator);
+): string =>
+  data
+    .map((item: SelectOptions) => (withQuotes ? `"${item[key]}"` : item[key]))
+    .join(separator);

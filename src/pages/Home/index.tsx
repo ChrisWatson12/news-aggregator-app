@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import makeAnimated from 'react-select/animated';
-import {
-  XMarkIcon,
-  MagnifyingGlassIcon,
-  Cog8ToothIcon,
-} from "@heroicons/react/24/solid";
+import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import {
   useFetchNewsApiData,
   useFetchNewYorkTimesArticlesData,
@@ -35,7 +31,6 @@ export const Home: React.FC = () => {
   const [filterToDate, setFilterToDate] = useState("");
   const [filterDateError, setFilterDateError] = useState("");
   const [isShowSearchInput, setIsShowSearchInput] = useState(false);
-  const [isShowSettings, setIsShowSettings] = useState(false);
   const isEmptyLocalStorage = localStorageData.every((element) => (Array.isArray(element) && element?.length === 0) || element === null);
   const filterSelectionData: FilterData = {
     searchQuery,
@@ -134,19 +129,11 @@ export const Home: React.FC = () => {
       JSON.stringify([selectedSource, selectedCategory, selectedAuthor])
     );
     setLocalStorageData([selectedSource, selectedCategory, selectedAuthor]);
-    setIsShowSettings(false);
   };
 
   const handleSearchButtonClick = () => {
     setIsShowSearchInput(!isShowSearchInput);
-    setIsShowSettings(false);
   };
-
-  const handleSettingsButtonClick = () => {
-    setIsShowSettings(!isShowSettings);
-    setIsShowSearchInput(false);
-  };
-
 
   useEffect(() => {
     if(!selectedFromDate || !selectedToDate) {
@@ -188,74 +175,21 @@ export const Home: React.FC = () => {
         <h1 className="text-xl font-bold py-2 rounded-lg">
           {!isEmptyLocalStorage ? "My Favorite Articles" : "Breaking News"}
         </h1>
-        <div className="flex items-end justify-around py-2 rounded-lg bg-[#003366] text-white w-[25%] md:w-[15%] lg:w-[10%]">
+        <div className="flex items-end justify-around p-2 rounded-lg bg-appBgColor text-white">
           <button onClick={handleSearchButtonClick}>
             <MagnifyingGlassIcon className="h-8 w-8" aria-hidden="true" />
-          </button>
-          <button onClick={handleSettingsButtonClick}>
-            <Cog8ToothIcon className="h-8 w-8" aria-hidden="true" />
           </button>
         </div>
       </div>
 
-      {isShowSettings && (
-        <div className="grid  gap-y-5 gap-x-5  bg-[#003366] py-6 px-4 rounded-lg ">
-          <p className="text-base font-bold text-white">
-            You can choose your favorite sources and categories
-          </p>
-          <div className="grid sm:grid-cols-3 md:grid-cols-4 gap-4">
-            <Select
-              value={selectedSource}
-              components={animatedComponents}
-              onChange={handleSourceSelection}
-              options={SOURCE_OPTIONS_LIST}
-              placeholder="Select a source"
-              isClearable
-              isMulti
-              className="col-span-full md:col-span-1"
-            />
-
-            <Select
-              value={selectedCategory}
-              components={animatedComponents}
-              onChange={handleCategorySelection}
-              options={CATEGORY_OPTIONS_LIST}
-              placeholder="Select a category"
-              isClearable
-              isMulti
-              className="col-span-full md:col-span-1"
-            />
-
-            <Select
-              value={selectedAuthor}
-              components={animatedComponents}
-              onChange={handleAuthorSelection}
-              options={AUTHOR_OPTIONS_LIST}
-              placeholder="Select a author"
-              isClearable
-              isMulti
-              className="col-span-full md:col-span-1"
-            />
-
-            <button
-              onClick={handleSaveFavorite}
-              className="text-xl p-2 md:p-1 font-bold bg-white  text-[#003366] rounded-md col-span-full md:col-span-1"
-            >
-              Save Filter Options
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="grid items-center gap-y-5 gap-x-5 md:grid-cols-2 xl:grid-cols-3 mt-20">
-        {isShowSearchInput && (
+      {isShowSearchInput && (
           <form
             onSubmit={(e) => handleSearch(e)}
             className="col-span-full w-full flex items-center"
           >
             <input
               required
-              placeholder="Search innoscripta news"
+              placeholder="Search..."
               className="w-[90%] py-2 px-3 rounded-l-md border border-[#ccc] box-border min-h-[38px] col-span-full xl:col-auto focus:border-2 outline-[#2684ff] focus:shadow-sm-[#2684ff] font-sans placeholder:text-[#808080] placeholder:text-lg font-normal"
               value={query}
               type="text"
@@ -270,6 +204,54 @@ export const Home: React.FC = () => {
           </form>
         )}
 
+      <div className="grid  gap-y-5 gap-x-5  bg-appBgColor py-6 px-4 rounded-lg ">
+        <p className="text-base font-bold text-white">
+          You can choose your favorite sources, categories and authors
+        </p>
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <Select
+            value={selectedSource}
+            components={animatedComponents}
+            onChange={handleSourceSelection}
+            options={SOURCE_OPTIONS_LIST}
+            placeholder="Select a source"
+            isClearable
+            isMulti
+            className="col-span-full md:col-span-1"
+          />
+
+          <Select
+            value={selectedCategory}
+            components={animatedComponents}
+            onChange={handleCategorySelection}
+            options={CATEGORY_OPTIONS_LIST}
+            placeholder="Select a category"
+            isClearable
+            isMulti
+            className="col-span-full md:col-span-1"
+          />
+
+          <Select
+            value={selectedAuthor}
+            components={animatedComponents}
+            onChange={handleAuthorSelection}
+            options={AUTHOR_OPTIONS_LIST}
+            placeholder="Select a author"
+            isClearable
+            isMulti
+            className="col-span-full md:col-span-1"
+          />
+
+          <button
+            onClick={handleSaveFavorite}
+            className="p-2 md:p-1 font-bold bg-white text-appBgColor rounded-md col-span-full md:col-span-1"
+          >
+            Save Filter Options
+          </button>
+        </div>
+      </div>
+
+      <div className="grid items-center gap-y-5 gap-x-5 md:grid-cols-2 xl:grid-cols-3 mt-20">
         {filterData && (
           <div className="w-fit flex justify-between items-center p-2 rounded-sm text-lg font-semibold bg-[#C20017]">
             <h4 className="text-base text-white font-normal">
