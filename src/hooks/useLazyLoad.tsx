@@ -1,35 +1,33 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { useScrollEnd } from './useScrollEnd'
-import { INewsItem } from '../types'
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useScrollEnd } from "./useScrollEnd";
+import { INewsItem } from "../types";
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 export function useLazyLoad(
   items: INewsItem[],
-  loaderTriggerElement: HTMLElement | null,
+  loaderTriggerElement: HTMLElement | null
 ) {
-  const lastItems = useRef<object | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
-
-  const totalPagesCount = items?.length
-  const isLastPage = totalPagesCount === currentPage || totalPagesCount === 0
+  const lastItems = useRef<object | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPagesCount = items?.length;
+  const isLastPage = totalPagesCount === currentPage || totalPagesCount === 0;
+  const visibleItems = items?.slice(0, currentPage * PAGE_SIZE);
 
   const onScrollEnd = useCallback(() => {
     if (!isLastPage) {
-      setCurrentPage(currentPage + 1)
+      setCurrentPage(currentPage + 1);
     }
-  }, [currentPage, isLastPage])
+  }, [currentPage, isLastPage]);
 
   useEffect(() => {
     if (lastItems.current !== items) {
-      setCurrentPage(1)
-      lastItems.current = items
+      setCurrentPage(1);
+      lastItems.current = items;
     }
-  }, [items])
+  }, [items]);
 
-  useScrollEnd(loaderTriggerElement, onScrollEnd)
+  useScrollEnd(loaderTriggerElement, onScrollEnd);
 
-  const visibleItems = items?.slice(0, currentPage * PAGE_SIZE)
-
-  return { visibleItems, currentPage, isLastPage }
+  return { visibleItems, currentPage, isLastPage };
 }
