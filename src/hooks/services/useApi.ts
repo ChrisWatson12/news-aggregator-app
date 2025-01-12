@@ -1,7 +1,7 @@
 import useSWR from "swr";
 import axios from "axios";
 import { FilterData, INewsItem, SelectOptions } from "../../types";
-import { getArrayOrNull, parseCommaSeparatedStrToObject } from "../../utils";
+import { getArrayOrNull, getArticleAuthor, parseCommaSeparatedStrToObject } from "../../utils";
 import { SOURCE_NEWS_API, SOURCE_NY_TIME, SOURCE_THE_GUARDIAN } from "../../constants";
 
 const swrConfig = {
@@ -181,18 +181,7 @@ export function useFetchSearchResultData(
   ];
 
   const filteredMergedArray = selectedAuthor
-    ? mergedArray.filter((article) => {
-        switch (true) {
-          case catType === SOURCE_NEWS_API:
-            return (article?.author ?? "").includes(selectedAuthor);
-
-          case catType === SOURCE_NY_TIME:
-            return (article?.byline ?? "").includes(selectedAuthor);
-
-          case catType === SOURCE_THE_GUARDIAN:
-            return (article.fields?.byline ?? "").includes(selectedAuthor);
-        }
-      })
+    ? mergedArray.filter((article) => getArticleAuthor(article).includes(selectedAuthor))
     : mergedArray;
 
   // Return results

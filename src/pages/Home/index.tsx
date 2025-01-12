@@ -146,6 +146,8 @@ export const Home: React.FC = () => {
   const handleFromDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilterSelection((prevState) => ({
       ...prevState,
+      category: null,
+      author: null,
       fromDate: e.target.value,
     }));
   };
@@ -286,7 +288,7 @@ export const Home: React.FC = () => {
               isMulti={false}
               isDisabled={Boolean(fromDate) || Boolean(!sources.length)}
             />
-            <Tooltip id="categoryTooltip" place="bottom">{Boolean(fromDate) || Boolean(!sources.length) ? "Please select at least one source first." : ""}</Tooltip>
+            <Tooltip id="categoryTooltip" place="bottom">{(fromDate || sources.length > 0) ? "" : "Please select at least one source first."}</Tooltip>
           </div>
           <div data-tooltip-id="authorTooltip" className="col-span-full md:col-span-1">
             <Select
@@ -300,7 +302,7 @@ export const Home: React.FC = () => {
               isMulti={false}
               isDisabled={Boolean(fromDate) || Boolean(!category)}
             />
-            <Tooltip id="authorTooltip" place="bottom">{Boolean(fromDate) || Boolean(!category) ? "Please select a category first." : ""}</Tooltip>
+            <Tooltip id="authorTooltip" place="bottom">{(fromDate || category) ? "" : "Please select a category first."}</Tooltip>
           </div>
           <div
             className="col-span-full md:col-span-1"
