@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Select from "react-select";
 import makeAnimated from 'react-select/animated';
+import { Tooltip } from 'react-tooltip';
 import { XMarkIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import {
   useFetchNewsApiData,
   useFetchNewYorkTimesArticlesData,
   useFetchTheGuardianData,
   useFetchSearchResultData,
+  useFetchNYTimesSectionListData,
+  useFetchTheGuardianSectionListData
 } from "../../services/useApi";
 import { NewsList } from "../../components/NewsList";
 import { NewsSkeleton } from "../../components/NewsSkeleton";
@@ -17,49 +20,74 @@ import {
   CATEGORY_OPTIONS_LIST,
   SOURCE_OPTIONS_LIST,
 } from "../../constants";
+import { getArrayOrNull } from "../../utils";
+import { Snackbar } from "../../components/Snackbar";
 
 export const Home: React.FC = () => {
   const [localStorageData, setLocalStorageData] = useState<any[]>([]);
   const [query, setQuery] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSource, setSelectedSource] = useState<readonly SelectOptions[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<readonly SelectOptions[]>([]);
-  const [selectedAuthor, setSelectedAuthor] = useState<readonly SelectOptions[]>([]);
-  const [selectedFromDate, setSelectedFromDate] = useState<string>("");
-  const [selectedToDate, setSelectedToDate] = useState<string>("");
+  const [filterSelection, setFilterSelection] = useState<FilterData>({
+    searchQuery: "",
+    category: null,
+    author: null,
+    sources: [],
+    fromDate: "",
+    toDate: "",
+  });
   const [filterFromDate, setFilterFromDate] = useState("");
   const [filterToDate, setFilterToDate] = useState("");
   const [filterDateError, setFilterDateError] = useState("");
+  const [isSnackbarVisible, setIsSnackbarVisible] = useState(false);
   const [isShowSearchInput, setIsShowSearchInput] = useState(false);
   const isEmptyLocalStorage = localStorageData.every((element) => (Array.isArray(element) && element?.length === 0) || element === null);
-  const filterSelectionData: FilterData = {
-    searchQuery,
-    categories: selectedCategory,
-    authors: selectedAuthor,
-    sources: selectedSource,
-    fromDate: selectedFromDate,
-    toDate: selectedToDate,
-  };
-  const { searchResultData, isSearchResultLoading } = useFetchSearchResultData(filterSelectionData);
   const { allNewsApiData, isLoadingNewsApiData } = useFetchNewsApiData();
   const { allNewYorkTimesData, isLoadingNewYorkTimesData } = useFetchNewYorkTimesArticlesData();
   const { allTheGuardianData, isLoadingTheGuardianData } = useFetchTheGuardianData();
+  const { category, author, sources, fromDate, toDate } = filterSelection;
+  // Check selected sources
+  const selectedSources = useMemo(() => ({
+    isNewsAPI: sources.some((source) => source.value === 0),
+    isNYTimes: sources.some((source) => source.value === 1),
+    isTheGuardian: sources.some((source) => source.value === 2),
+  }), [sources]);
+  const { searchResultData, isSearchResultLoading } = useFetchSearchResultData(filterSelection, selectedSources);
+  const { nyTimesSectionListData = [], isNYTimesSectionListLoading } = useFetchNYTimesSectionListData(selectedSources.isNYTimes)
+  const { guadianSectionListData = [], isGuardianSectionListLoading } = useFetchTheGuardianSectionListData(selectedSources.isTheGuardian)
+  
+  const guardianSectionsList = guadianSectionListData?.map(
+    ({ id, webTitle }: { id: string; webTitle: string }) => ({ value: id, label: webTitle, type: 'theGuardian' })
+  );
+ 
+  const nyTimeSectionList = nyTimesSectionListData?.map(
+    ({ section, display_name }: { section: string; display_name: string }) => ({
+      value: section,
+      label: display_name,
+      type: 'nyTimes',
+    })
+  );
+  const categoriesOptions = [
+    ...CATEGORY_OPTIONS_LIST,
+    ...guardianSectionsList,
+    ...nyTimeSectionList,
+  ]
   const getDataFromStorage = (): [] => JSON.parse(localStorage.getItem("personalizedNewsFeed") ?? "[]");
   const animatedComponents = makeAnimated();
   const isLaodingBreakingNews = isLoadingNewsApiData || isLoadingNewYorkTimesData || isLoadingTheGuardianData;
-  const allBreakingNewsData = [ ...allNewsApiData, ...allNewYorkTimesData, ...allTheGuardianData ];
-
-  const newsArticleData = (searchQuery || selectedCategory.length || selectedAuthor.length || selectedSource.length || selectedFromDate || selectedToDate) ? searchResultData : allBreakingNewsData;
-
+  const newsArticles = (sources.length || category || author || fromDate || toDate) ? searchResultData : [...allNewsApiData, ...allNewYorkTimesData, ...allTheGuardianData];
+  
   useEffect(() => {
     setLocalStorageData(getDataFromStorage());
   }, []);
 
   useEffect(() => {
     if (localStorageData.length) {
-      setSelectedSource(localStorageData[0] ?? []);
-      setSelectedCategory(localStorageData[1] ?? []);
-      setSelectedAuthor(localStorageData[2] ?? []);
+      
+      setFilterSelection((prevState) => ({
+        ...prevState,
+        sources: getArrayOrNull(localStorageData[0]) ?? [],
+        category: localStorageData[1] ? localStorageData[1] : null,
+        author: localStorageData[2] ? localStorageData[2] : null,
+      }));
     }
   }, [localStorageData]);
 
@@ -79,44 +107,68 @@ export const Home: React.FC = () => {
     }
   }
 
-  const handleCategorySelection = (selectedCatOption: readonly SelectOptions[]) => {
-    setSelectedCategory(selectedCatOption);
+  const handleCategorySelection = (selectedCatOption: SelectOptions | null) => {
+    setFilterSelection((prevState) => ({
+      ...prevState,
+      category: selectedCatOption,
+    }));
   };
 
-  const handleSourceSelection = (selectedSrcOption: readonly SelectOptions[]) => {
-    setSelectedSource(selectedSrcOption);
+  const handleSourceSelection = (selectedOptions: readonly SelectOptions[]) => {
+    setFilterSelection((prevState) => ({
+      ...prevState,
+      sources: selectedOptions,
+      category: null,
+      author: null,
+    }));
   };
 
-  const handleAuthorSelection = (selectedAuthOption: readonly SelectOptions[]) => {
-    setSelectedAuthor(selectedAuthOption);
+  const handleAuthorSelection = (selectedOption: SelectOptions | null) => {
+    setFilterSelection((prevState) => ({
+      ...prevState,
+      author: selectedOption,
+    }));
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (query) {
-      setSearchQuery(query);
+      setFilterSelection((prevState) => ({
+        ...prevState,
+        searchQuery: query,
+      }));
     }
   };
 
   const clearSearchQuery = () => {
-    setSearchQuery("");
+    setFilterSelection((prevState) => ({
+      ...prevState,
+      searchQuery: '',
+    }));
   };
 
   const handleFromDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedDate = e.target.value;
-    setSelectedFromDate(selectedDate);
+    setFilterSelection((prevState) => ({
+      ...prevState,
+      fromDate: e.target.value,
+    }));
   };
 
   const handleToDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedDate = e.target.value;
-    setSelectedToDate(selectedDate);
+    setFilterSelection((prevState) => ({
+      ...prevState,
+      toDate: e.target.value,
+    }));
   };
 
   const handleRemoveDateFilter = () => {
     setFilterFromDate("");
     setFilterToDate("");
-    setSelectedFromDate("");
-    setSelectedToDate("");
+    setFilterSelection((prevState) => ({
+      ...prevState,
+      fromDate: '',
+      toDate: '',
+    }));
   };
 
   const handleRemoveDateFilterError = () => {
@@ -126,9 +178,10 @@ export const Home: React.FC = () => {
   const handleSaveFavorite = () => {
     localStorage.setItem(
       "personalizedNewsFeed",
-      JSON.stringify([selectedSource, selectedCategory, selectedAuthor])
+      JSON.stringify([sources, category, author])
     );
-    setLocalStorageData([selectedSource, selectedCategory, selectedAuthor]);
+    setLocalStorageData([sources, category, author]);
+    showSnackbar();
   };
 
   const handleSearchButtonClick = () => {
@@ -136,20 +189,28 @@ export const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    if(!selectedFromDate || !selectedToDate) {
+    if(!fromDate || !toDate) {
       return;
     }
 
-    if (selectedFromDate < selectedToDate) {
-      setFilterFromDate(selectedFromDate);
-      setFilterToDate(selectedToDate);
+    if (fromDate < toDate) {
+      setFilterFromDate(fromDate);
+      setFilterToDate(toDate);
       setFilterDateError("");
     } else {
       setFilterFromDate("");
       setFilterToDate("");
       setFilterDateError("From date cannot be greater than To date");
     }
-  }, [ selectedFromDate, selectedToDate ]);
+  }, [ fromDate, toDate ]);
+
+  const showSnackbar = () => {
+    setIsSnackbarVisible(true);
+    
+    setTimeout(() => {
+      setIsSnackbarVisible(false);
+    }, 3000);
+  }
 
   const renderFilterMessage = () => {
     if (filterFromDate && filterToDate && !filterDateError) {
@@ -181,76 +242,84 @@ export const Home: React.FC = () => {
           </button>
         </div>
       </div>
-
       {isShowSearchInput && (
-          <form
-            onSubmit={(e) => handleSearch(e)}
-            className="col-span-full w-full flex items-center"
+        <form
+          onSubmit={(e) => handleSearch(e)}
+          className="col-span-full w-full flex items-center"
+        >
+          <input
+            required
+            placeholder="Search..."
+            className="w-[90%] py-2 px-3 rounded-l-md border border-[#ccc] box-border min-h-[38px] col-span-full xl:col-auto focus:border-2 outline-[#2684ff] focus:shadow-sm-[#2684ff] font-sans placeholder:text-[#808080] placeholder:text-lg font-normal"
+            value={query}
+            type="text"
+            onChange={handleInputChange}
+          />
+          <button
+            type="submit"
+            className="flex-grow text-xl font-bold bg-[#C20017] border border-[#C20017] min-h-[38px] p-1.5 text-white rounded-r-md"
           >
-            <input
-              required
-              placeholder="Search..."
-              className="w-[90%] py-2 px-3 rounded-l-md border border-[#ccc] box-border min-h-[38px] col-span-full xl:col-auto focus:border-2 outline-[#2684ff] focus:shadow-sm-[#2684ff] font-sans placeholder:text-[#808080] placeholder:text-lg font-normal"
-              value={query}
-              type="text"
-              onChange={handleInputChange}
-            />
-            <button
-              type="submit"
-              className="flex-grow text-xl font-bold bg-[#C20017] border border-[#C20017] min-h-[38px] p-1.5 text-white rounded-r-md"
-            >
-              Search
-            </button>
-          </form>
-        )}
-
+            Search
+          </button>
+        </form>
+      )}
       <div className="grid  gap-y-5 gap-x-5  bg-appBgColor py-6 px-4 rounded-lg ">
         <p className="text-base font-bold text-white">
           You can choose your favorite sources, categories and authors
         </p>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <Select
-            value={selectedSource}
+            className="col-span-full md:col-span-1"
+            value={sources}
             components={animatedComponents}
             onChange={handleSourceSelection}
             options={SOURCE_OPTIONS_LIST}
             placeholder="Select a source"
             isClearable
             isMulti
-            className="col-span-full md:col-span-1"
           />
-
-          <Select
-            value={selectedCategory}
-            components={animatedComponents}
-            onChange={handleCategorySelection}
-            options={CATEGORY_OPTIONS_LIST}
-            placeholder="Select a category"
-            isClearable
-            isMulti
+          <div data-tooltip-id="categoryTooltip" className="col-span-full md:col-span-1">
+            <Select
+              value={category}
+              components={animatedComponents}
+              onChange={handleCategorySelection}
+              options={categoriesOptions}
+              placeholder="Select a category"
+              isLoading={
+                isGuardianSectionListLoading || isNYTimesSectionListLoading
+              }
+              isClearable
+              isMulti={false}
+              isDisabled={Boolean(fromDate) || Boolean(!sources.length)}
+            />
+            <Tooltip id="categoryTooltip" place="bottom">{Boolean(fromDate) || Boolean(!sources.length) ? "Please select at least one source first." : ""}</Tooltip>
+          </div>
+          <div data-tooltip-id="authorTooltip" className="col-span-full md:col-span-1">
+            <Select
+              value={author}
+              components={animatedComponents}
+              onChange={handleAuthorSelection}
+              options={AUTHOR_OPTIONS_LIST}
+              placeholder="Select a author"
+              isClearable
+              isMulti={false}
+              isDisabled={Boolean(fromDate) || Boolean(!sources.length)}
+            />
+            <Tooltip id="authorTooltip" place="bottom">{Boolean(fromDate) || Boolean(!sources.length) ? "Please select at least one source first." : ""}</Tooltip>
+          </div>
+          <div
             className="col-span-full md:col-span-1"
-          />
-
-          <Select
-            value={selectedAuthor}
-            components={animatedComponents}
-            onChange={handleAuthorSelection}
-            options={AUTHOR_OPTIONS_LIST}
-            placeholder="Select a author"
-            isClearable
-            isMulti
-            className="col-span-full md:col-span-1"
-          />
-
-          <button
-            onClick={handleSaveFavorite}
-            className="p-2 md:p-1 font-bold bg-white text-appBgColor rounded-md col-span-full md:col-span-1"
+            style={{ height: "36px" }}
           >
-            Save Filter Options
-          </button>
+            <button
+              onClick={handleSaveFavorite}
+              className="w-full h-full font-bold bg-white text-appBgColor rounded-md"
+            >
+              Save Filter Options
+            </button>
+          </div>
         </div>
       </div>
-
       <div className="grid items-center gap-y-5 gap-x-5 md:grid-cols-2 xl:grid-cols-3 mt-20">
         {filterData && (
           <div className="w-fit flex justify-between items-center p-2 rounded-sm text-lg font-semibold bg-[#C20017]">
@@ -265,7 +334,6 @@ export const Home: React.FC = () => {
             </button>
           </div>
         )}
-
         <div className="col-span-full flex flex-wrap items-end w-full gap-4">
           <div className="w-64">
             <h2>From Date</h2>
@@ -273,7 +341,7 @@ export const Home: React.FC = () => {
               id="from-date-picker"
               type="date"
               name="date"
-              value={selectedFromDate}
+              value={fromDate}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               onChange={handleFromDateChange}
             />
@@ -284,32 +352,36 @@ export const Home: React.FC = () => {
               id="from-date-picker"
               type="date"
               name="date"
-              disabled={!selectedFromDate}
-              value={selectedToDate}
+              disabled={!fromDate}
+              value={toDate}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               onChange={handleToDateChange}
             />
           </div>
         </div>
       </div>
-
-      {(isSearchResultLoading || isLaodingBreakingNews) ? (
+      {isSearchResultLoading || isLaodingBreakingNews ? (
         <div className="mt-3">
           <NewsSkeleton />
         </div>
-      ) : !newsArticleData?.length && (
-        <p className="col-span-full text-lg font-bold text-center">
-          Hmmm... There were no article found with this search.
-          <br /> Please try another.
-        </p>
+      ) : (
+        !newsArticles?.length && (
+          <p className="col-span-full text-lg font-bold text-center">
+            Hmmm... There were no article found with this search.
+            <br /> Please try another.
+          </p>
+        )
       )}
-
-      {newsArticleData.length > 0 && (
+      {newsArticles.length > 0 && (
         <>
-          <NewsList items={newsArticleData} />
+          <NewsList items={newsArticles} />
           <ScrollButton />
         </>
       )}
+      <Snackbar
+        visible={isSnackbarVisible}
+        message="Personalized news feed saved successfully."
+      />
     </div>
   );
 };

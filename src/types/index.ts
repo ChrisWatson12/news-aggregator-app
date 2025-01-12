@@ -1,13 +1,14 @@
 export interface SelectOptions {
   value: number | string;
   label: string;
+  type?: string;
 }
 
 export interface FilterData {
   searchQuery: string;
-  categories: readonly SelectOptions[];
+  category: SelectOptions | null;
   sources: readonly SelectOptions[];
-  authors: readonly SelectOptions[];
+  author: SelectOptions | null;
   fromDate: string;
   toDate: string;
 }
@@ -50,7 +51,7 @@ export interface INewsItem {
   slug_name?: string;
   section?: string;
   subsection?: string;
-  abstract?: string;
+  headline?: Record<string, string | null>;
   uri?: string;
   byline?: string | IByline;
   item_type?: string;

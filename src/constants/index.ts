@@ -1,28 +1,18 @@
 import { SelectOptions } from '../types'
 
 export const CATEGORY_OPTIONS_LIST: SelectOptions[] = [
-  { value: 'general', label: 'General' },
-  { value: 'sports', label: 'Sports' },
-  { value: 'technology', label: 'Technology' },
-  { value: 'entertainment', label: 'Entertainment' },
-  { value: 'science', label: 'Science' },
-  { value: 'health', label: 'Health' },
-  { value: 'business', label: 'Business' },
-  { value: 'arts', label: 'Arts' },
-  { value: 'animals-farmed', label: 'Animals farmed' },
-  { value: 'automobiles', label: 'Automobiles' },
+  { value: 'general', label: 'General', type: 'newsAPI' },
+  { value: 'sports', label: 'Sports', type: 'newsAPI' },
+  { value: 'technology', label: 'Technology', type: 'newsAPI' },
+  { value: 'entertainment', label: 'Entertainment', type: 'newsAPI' },
+  { value: 'science', label: 'Science', type: 'newsAPI' },
+  { value: 'health', label: 'Health', type: 'newsAPI' },
 ];
 
 export const SOURCE_OPTIONS_LIST: SelectOptions[] = [
-  { value: "theguardian.com", label: 'The Guardian' },
-  { value: "The New York Times", label: 'The New York Times' },
-  { value: "business-insider", label: 'Business Insider' },
-  { value: "fox-news", label: 'Fox News' },
-  { value: "buzzfeed", label: 'Buzzfeed' },
-  { value: "techcrunch", label: 'TechCrunch' },
-  { value: "the-next-web", label: 'The Next Web' },
-  { value: "time", label: 'Time' },
-  { value: "al-jazeera-english", label: 'Al Jazeera English' },
+  { value: 0, label: 'NewsAPI.org' },
+  { value: 1, label: 'New York Times' },
+  { value: 2, label: 'The Guardian' },
 ];
 
 export const AUTHOR_OPTIONS_LIST: SelectOptions[] = [
