@@ -1,7 +1,7 @@
 export interface SelectOptions {
   value: number | string;
   label: string;
-  type?: string;
+  type?: 'newsAPI' | 'nyTimes' | 'theGuardian';
 }
 
 export interface FilterData {

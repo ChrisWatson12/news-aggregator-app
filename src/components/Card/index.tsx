@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { INewsItem } from "../../types";
-import { getArticleAuthor, getArticleTitle, getNyTimesImageUrl } from "../../utils";
+import { getArticleAuthor, getArticleTitle, getNyTimesImageUrl, removeByPrefix } from "../../utils";
 
 export const Card = ({ item, index }: { item: INewsItem; index: number }) => {
   const {url, webUrl, urlToImage, fields: { thumbnail } = {}, } = item;
@@ -28,7 +28,7 @@ export const Card = ({ item, index }: { item: INewsItem; index: number }) => {
       <div className="p-4">
         <h3 className="text-xl font-semibold">{articleTitle}</h3>
         <p className="text-sm text-gray-500 mt-2 truncate">
-          By <span className="font-medium">{articleAuthor}</span>
+          By <span className="font-medium">{removeByPrefix(articleAuthor)}</span>
         </p>
         <a
           href={url ?? webUrl}

@@ -9,17 +9,14 @@ import {
   useFetchTheGuardianData,
   useFetchSearchResultData,
   useFetchNYTimesSectionListData,
-  useFetchTheGuardianSectionListData
-} from "../../services/useApi";
+  useFetchTheGuardianSectionListData,
+  useFetchAuthorListData
+} from "../../hooks/services/useApi";
 import { NewsList } from "../../components/NewsList";
 import { NewsSkeleton } from "../../components/NewsSkeleton";
 import { ScrollButton } from "../../components/ScrollToTopButton";
 import { FilterData, SelectOptions } from "../../types";
-import {
-  AUTHOR_OPTIONS_LIST,
-  CATEGORY_OPTIONS_LIST,
-  SOURCE_OPTIONS_LIST,
-} from "../../constants";
+import { CATEGORY_OPTIONS_LIST, SOURCE_NY_TIME, SOURCE_OPTIONS_LIST, SOURCE_THE_GUARDIAN } from "../../constants";
 import { getArrayOrNull } from "../../utils";
 import { Snackbar } from "../../components/Snackbar";
 
@@ -39,10 +36,10 @@ export const Home: React.FC = () => {
   const [filterDateError, setFilterDateError] = useState("");
   const [isSnackbarVisible, setIsSnackbarVisible] = useState(false);
   const [isShowSearchInput, setIsShowSearchInput] = useState(false);
-  const isEmptyLocalStorage = localStorageData.every((element) => (Array.isArray(element) && element?.length === 0) || element === null);
   const { allNewsApiData, isLoadingNewsApiData } = useFetchNewsApiData();
   const { allNewYorkTimesData, isLoadingNewYorkTimesData } = useFetchNewYorkTimesArticlesData();
   const { allTheGuardianData, isLoadingTheGuardianData } = useFetchTheGuardianData();
+  const isEmptyLocalStorage = localStorageData.every((element) => (Array.isArray(element) && element?.length === 0) || element === null);
   const { category, author, sources, fromDate, toDate } = filterSelection;
   // Check selected sources
   const selectedSources = useMemo(() => ({
@@ -51,24 +48,23 @@ export const Home: React.FC = () => {
     isTheGuardian: sources.some((source) => source.value === 2),
   }), [sources]);
   const { searchResultData, isSearchResultLoading } = useFetchSearchResultData(filterSelection, selectedSources);
-  const { nyTimesSectionListData = [], isNYTimesSectionListLoading } = useFetchNYTimesSectionListData(selectedSources.isNYTimes)
-  const { guadianSectionListData = [], isGuardianSectionListLoading } = useFetchTheGuardianSectionListData(selectedSources.isTheGuardian)
-  
+  const { nyTimesSectionListData = [], isNYTimesSectionListLoading } = useFetchNYTimesSectionListData(selectedSources.isNYTimes);
+  const { guadianSectionListData = [], isGuardianSectionListLoading } = useFetchTheGuardianSectionListData(selectedSources.isTheGuardian);
+  const { authorOptionsListData, isAuthorOptionsLoading } = useFetchAuthorListData(category, Boolean(category));
   const guardianSectionsList = guadianSectionListData?.map(
-    ({ id, webTitle }: { id: string; webTitle: string }) => ({ value: id, label: webTitle, type: 'theGuardian' })
+    ({ id, webTitle }: { id: string; webTitle: string }) => ({ value: id, label: webTitle, type: SOURCE_THE_GUARDIAN })
   );
- 
   const nyTimeSectionList = nyTimesSectionListData?.map(
     ({ section, display_name }: { section: string; display_name: string }) => ({
       value: section,
       label: display_name,
-      type: 'nyTimes',
+      type: SOURCE_NY_TIME,
     })
   );
   const categoriesOptions = [
-    ...CATEGORY_OPTIONS_LIST,
-    ...guardianSectionsList,
-    ...nyTimeSectionList,
+    ...(selectedSources.isNewsAPI ? CATEGORY_OPTIONS_LIST : []),
+    ...(selectedSources.isTheGuardian ? guardianSectionsList : []),
+    ...(selectedSources.isNYTimes ? nyTimeSectionList : []),
   ]
   const getDataFromStorage = (): [] => JSON.parse(localStorage.getItem("personalizedNewsFeed") ?? "[]");
   const animatedComponents = makeAnimated();
@@ -285,9 +281,7 @@ export const Home: React.FC = () => {
               onChange={handleCategorySelection}
               options={categoriesOptions}
               placeholder="Select a category"
-              isLoading={
-                isGuardianSectionListLoading || isNYTimesSectionListLoading
-              }
+              isLoading={isGuardianSectionListLoading || isNYTimesSectionListLoading}
               isClearable
               isMulti={false}
               isDisabled={Boolean(fromDate) || Boolean(!sources.length)}
@@ -299,13 +293,14 @@ export const Home: React.FC = () => {
               value={author}
               components={animatedComponents}
               onChange={handleAuthorSelection}
-              options={AUTHOR_OPTIONS_LIST}
+              options={authorOptionsListData}
               placeholder="Select a author"
+              isLoading={isAuthorOptionsLoading}
               isClearable
               isMulti={false}
-              isDisabled={Boolean(fromDate) || Boolean(!sources.length)}
+              isDisabled={Boolean(fromDate) || Boolean(!category)}
             />
-            <Tooltip id="authorTooltip" place="bottom">{Boolean(fromDate) || Boolean(!sources.length) ? "Please select at least one source first." : ""}</Tooltip>
+            <Tooltip id="authorTooltip" place="bottom">{Boolean(fromDate) || Boolean(!category) ? "Please select a category first." : ""}</Tooltip>
           </div>
           <div
             className="col-span-full md:col-span-1"
