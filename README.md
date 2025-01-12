@@ -116,7 +116,7 @@ npm start
 
 ---
 
-### 5. Access the Application
+### 4. Access the Application
 
 Once the application is running, access it in your browser at:
 
